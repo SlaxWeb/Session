@@ -1,4 +1,4 @@
 Session
 =======
 
-Session class
+Only initial commit, not tested yet
