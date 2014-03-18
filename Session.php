@@ -28,7 +28,9 @@ class Session
      */
     protected $_sessionId = '';
 
-    const SESSION_STORAGE_PHP   =   1;
+    const SESSION_STORAGE_PHP       =   1;
+    const SESSION_STORAGE_DB        =   2;
+    const SESSION_STORAGE_MEMCACHED =   3;
 
     /**
      * Default class constructor
@@ -68,14 +70,14 @@ class Session
 
         // set the storage
         switch ($storage) {
-            case SESSION_STORAGE_PHP:
+            case self::SESSION_STORAGE_PHP:
                 // set the PHP storage
                 $this->_storage = new Storage\PhpStorage\PhpStorage();
                 break;
-            case SESSION_STORAGE_DB:
+            case self::SESSION_STORAGE_DB:
                 $this->_storage = new Storage\DbStorage\DbStorage();
                 break;
-            case SESSION_STORAGE_MEMCACHED:
+            case self::SESSION_STORAGE_MEMCACHED:
                 $this->_storage = new Storage\MemcachedStorage\MemcachedStorage();
                 break;
         }
