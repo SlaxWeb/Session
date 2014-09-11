@@ -96,7 +96,7 @@ class Session
      *                      Default value: true
      * @return mixed Returns the session variable value
      */
-    public function getSession($name = true)
+    public function get($name = true)
     {
         if ($name === true) {
             // all session data is needed
@@ -112,7 +112,7 @@ class Session
      *
      * @return array Returns the array containing all session variables
      */
-    public function getAllSession()
+    public function getAll()
     {
         return $this->_storage->getAllVariables();
     }
@@ -125,7 +125,7 @@ class Session
      * @param $value mixed If $name is a string, $value must be set to the value
      *                      that needs to be set. Default value: null
      */
-    public function setSession($name, $value = null)
+    public function set($name, $value = null)
     {
         if (is_array($name) === true) {
             $this->_storage->setVariables($name);
