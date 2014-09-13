@@ -135,6 +135,14 @@ class Session
     }
 
     /**
+     * Destroy session
+     */
+    public function destroy()
+    {
+        $this->_storage->destroySession();
+    }
+
+    /**
      * Set session ID
      *
      * Sets the session ID to class property, and regenerates it on request.
