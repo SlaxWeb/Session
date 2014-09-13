@@ -47,7 +47,7 @@ class Session
         // do some session checks
         $this->_checkSession();
         // regenerate and set new session ID
-        $this->_setSessionId(true);
+        $this->_setSessionId(false);
     }
 
     /**
