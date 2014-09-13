@@ -142,6 +142,9 @@ class Session
         $this->_storage->destroySession();
     }
 
+    /**
+     * Regenerate session ID
+     */
     public function regenerateId()
     {
         session_regenerate_id(true);
