@@ -142,6 +142,17 @@ class Session
         $this->_storage->destroySession();
     }
 
+    public function regenerateId()
+    {
+        session_regenerate_id(true);
+        // session data has been removed, refill it,
+        // if PHP session storage is used
+        if (method_exists($this->_storage, 'refillSession') === true) {
+            $this->_storage->refillSession();
+        }
+        $this->_sessionId = session_id();
+    }
+
     /**
      * Set session ID
      *
