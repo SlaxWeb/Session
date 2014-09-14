@@ -40,7 +40,7 @@ class PhpStorage implements \SlaxWeb\Session\Storage\iStorage
     /**
      * Get the session variable.
      *
-     * @param $name string Name of the session variable
+     * @param $name mixed Name of the session variable or array of session variables
      * @return mixed Returns the value of a session variable, or false if it was not found
      *
      * TODO:
@@ -48,6 +48,13 @@ class PhpStorage implements \SlaxWeb\Session\Storage\iStorage
      */
     public function getVariable($name)
     {
+        if (is_array($name) === true) {
+            $data = array();
+            foreach ($name as $n) {
+                $data[$n] = isset($this->_variables[$n]) ? $this->_variables[$n] : false;
+            }
+            return $data;
+        }
         return isset($this->_variables[$name]) ? $this->_variables[$name] : false;
     }
 
