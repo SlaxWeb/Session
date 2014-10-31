@@ -27,6 +27,12 @@ class Session
      * @var string
      */
     protected $_sessionId = '';
+    /**
+     * Expire time in seconds
+     *
+     * @var integer
+     */
+    protected $_expire = null;
 
     const SESSION_STORAGE_PHP       =   1;
     const SESSION_STORAGE_DB        =   2;
@@ -40,8 +46,9 @@ class Session
      * @param $storage int Type of storage to use.
      *                      Default value: SESSION_STORAGE_PHP
      */
-    public function __construct($storage = self::SESSION_STORAGE_PHP)
+    public function __construct($storage = self::SESSION_STORAGE_PHP, $expire = 1800)
     {
+        $this->_expire = $expire;
         // set the storage
         $this->setStorage($storage, false);
         // do some session checks
@@ -189,18 +196,20 @@ class Session
     protected function _checkSession()
     {
         $userAgent = $this->_storage->getVariable('UserAgent');
+        $lastTime = $this->_storage->getVariable('LastActiveTime');
         // check if the user agent has been set
-        if ($userAgent !== false) {
+        if ($userAgent !== false && $lastTime !== false) {
             // user agent is set, let's do the checks
-            if ($userAgent === $_SERVER['HTTP_USER_AGENT']) {
+            if ($userAgent === $_SERVER['HTTP_USER_AGENT'] && (time() - $lastTime > $this->_expire) === false) {
                 // everything is fine, move on to the next check
             } else {
-                // user agent is not ok, destroy the session immediately
+                // user agent is not ok, or session has expired -> destroy the session immediately
                 $this->_storage->destroySession();
             }
         } else {
             // user agent has not been set, set it now
             $this->_storage->setVariable('UserAgent', $_SERVER['HTTP_USER_AGENT']);
         }
+        $this->_storage->setVariable('LastActiveTime', time());
     }
 }
