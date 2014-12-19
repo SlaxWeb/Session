@@ -142,6 +142,23 @@ class Session
     }
 
     /**
+     * Unset session variable
+     *
+     * @param $name mixed May be the name of the session variable to unset,
+     *                      or an array of session names to unset.
+     */
+    public function remove($name)
+    {
+        if (is_array($name) === true) {
+            foreach ($name as $n) {
+                $this->_storage->removeVariable($n);
+            }
+        } else {
+            $this->_storage->removeVariable($name);
+        }
+    }
+
+    /**
      * Destroy session
      */
     public function destroy()
