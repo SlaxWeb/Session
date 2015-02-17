@@ -1,9 +1,6 @@
 <?php
 namespace SlaxWeb\Session;
 
-// Start session
-session_start();
-
 /**
  * Session class that handles retrieving/storing session data.
  * Uses a sub-class to use as storage. Available storage methods are:
