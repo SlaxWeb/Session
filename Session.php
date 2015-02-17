@@ -10,10 +10,7 @@ session_start();
  * - normal PHP session storage
  * - database storage (to be done)
  * - memcached (to be done)
-<<<<<<< HEAD
  * Copyright (c) 2013 Tomaz Lovrec (tomaz.lovrec@gmail.com)
-=======
->>>>>>> 1ab7c95972f317968d078ec3f6827aa1e9e183ac
  *
  * @author Tomaz Lovrec <tomaz.lovrec@gmail.com>
  */
@@ -99,7 +96,7 @@ class Session
                 break;
             case self::SESSION_STORAGE_MEMCACHED:
                 if ((isset($this->_config["host"]) && isset($this->_config["port"])) === false) {
-                    throw new Exception(
+                    throw new \Exception(
                         "Session needs to be initialised with an config as 3rd parameter in constructor, "
                         . "with \"host\" and \"port\" keys.",
                         500
