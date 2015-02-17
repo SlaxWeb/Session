@@ -38,10 +38,6 @@ class Session
      */
     protected $_expire = null;
 
-    const SESSION_STORAGE_PHP       =   1;
-    const SESSION_STORAGE_DB        =   2;
-    const SESSION_STORAGE_MEMCACHED =   3;
-
     /**
      * Storage constants
      */
