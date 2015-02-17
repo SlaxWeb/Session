@@ -12,21 +12,6 @@ session_start();
  * - memcached (to be done)
  * Copyright (c) 2013 Tomaz Lovrec (tomaz.lovrec@gmail.com)
  *
- * This file is part of "SlaxWeb Framework".
- *
- * "SlaxWeb Framework" is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Foobar is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
- *
  * @author Tomaz Lovrec <tomaz.lovrec@gmail.com>
  */
 class Session
@@ -43,31 +28,57 @@ class Session
      * @var string
      */
     protected $_sessionId = '';
+    /**
+     * Expire time in seconds
+     *
+     * @var integer
+     */
+    protected $_expire = null;
+    /**
+     * Config
+     * @var array
+     */
+    protected $_config = array();
+
+    /**
+     * Storage constants
+     */
+    const SESSION_STORAGE_PHP       =   1;
+    const SESSION_STORAGE_DB        =   2;
+    const SESSION_STORAGE_MEMCACHED =   3;
+
 
     /**
      * Default class constructor
      *
      * Sets the storage, checks for hijacks, and regenerates the session ID.
      *
-     * @param $storage int Type of storage to use. Default value: SESSION_STORAGE_PHP
+     * @param $storage int Type of storage to use.
+     *                      Default value: SESSION_STORAGE_PHP
      */
-    public function __construct($storage = SESSION_STORAGE_PHP)
+    public function __construct($storage = self::SESSION_STORAGE_PHP, $expire = 1800, array $config = array())
     {
+        // set config
+        $this->_config = $config;
+        // set expiration
+        $this->_expire = $expire;
         // set the storage
         $this->setStorage($storage, false);
         // do some session checks
         $this->_checkSession();
         // regenerate and set new session ID
-        $this->_setSessionId(true);
+        $this->_setSessionId(false);
     }
 
     /**
      * Set the session storage
      *
-     * Sets session storage and copies over all values from old storage if $copy is set to true.
+     * Sets session storage and copies over all values from old storage if 
+     * $copy is set to true.
      *
      * @param $storage int Session storage to set
-     * @param $copy bool Copy the session values from old storage to new. Default value: false
+     * @param $copy bool Copy the session values from old storage to new.
+     *                      Default value: false
      */
     public function setStorage($storage, $copy = false)
     {
@@ -79,15 +90,22 @@ class Session
 
         // set the storage
         switch ($storage) {
-            case SESSION_STORAGE_PHP:
+            case self::SESSION_STORAGE_PHP:
                 // set the PHP storage
                 $this->_storage = new Storage\PhpStorage\PhpStorage();
                 break;
-            case SESSION_STORAGE_DB:
+            case self::SESSION_STORAGE_DB:
                 $this->_storage = new Storage\DbStorage\DbStorage();
                 break;
-            case SESSION_STORAGE_MEMCACHED:
-                $this->_storage = new Storage\MemcachedStorage\MemcachedStorage();
+            case self::SESSION_STORAGE_MEMCACHED:
+                if ((isset($this->_config["host"]) && isset($this->_config["port"])) === false) {
+                    throw new \Exception(
+                        "Session needs to be initialised with an config as 3rd parameter in constructor, "
+                        . "with \"host\" and \"port\" keys.",
+                        500
+                    );
+                }
+                $this->_storage = new Storage\Memcached\Memcached($this->_config["host"], $this->_config["port"]);
                 break;
         }
 
@@ -100,11 +118,12 @@ class Session
     /**
      * Gets the session varibale
      *
-     * @param $name mixed Name of the session variable, if set to bool true, returns all session values.
-     *                    Default value: true
+     * @param $name mixed Name of the session variable, if set to bool true,
+     *                      returns all session values.
+     *                      Default value: true
      * @return mixed Returns the session variable value
      */
-    public function getSession($name = true)
+    public function get($name = true)
     {
         if ($name === true) {
             // all session data is needed
@@ -120,7 +139,7 @@ class Session
      *
      * @return array Returns the array containing all session variables
      */
-    public function getAllSession()
+    public function getAll()
     {
         return $this->_storage->getAllVariables();
     }
@@ -128,16 +147,57 @@ class Session
     /**
      * Set session variable
      *
-     * @param $name mixed May be the name of the session variable to set, or an array with key/value pairs
-     * @param $value mixed If $name is a string, $value must be set to the value that needs to be set. Default value: null
+     * @param $name mixed May be the name of the session variable to set,
+     *                      or an array with key/value pairs
+     * @param $value mixed If $name is a string, $value must be set to the value
+     *                      that needs to be set. Default value: null
      */
-    public function setSession($name, $value = null)
+    public function set($name, $value = null)
     {
         if (is_array($name) === true) {
             $this->_storage->setVariables($name);
         } else {
             $this->_storage->setVariable($name, $value);
         }
+    }
+
+    /**
+     * Unset session variable
+     *
+     * @param $name mixed May be the name of the session variable to unset,
+     *                      or an array of session names to unset.
+     */
+    public function remove($name)
+    {
+        if (is_array($name) === true) {
+            foreach ($name as $n) {
+                $this->_storage->removeVariable($n);
+            }
+        } else {
+            $this->_storage->removeVariable($name);
+        }
+    }
+
+    /**
+     * Destroy session
+     */
+    public function destroy()
+    {
+        $this->_storage->destroySession();
+    }
+
+    /**
+     * Regenerate session ID
+     */
+    public function regenerateId()
+    {
+        session_regenerate_id(true);
+        // session data has been removed, refill it,
+        // if PHP session storage is used
+        if (method_exists($this->_storage, 'refillSession') === true) {
+            $this->_storage->refillSession();
+        }
+        $this->_sessionId = session_id();
     }
 
     /**
@@ -152,7 +212,8 @@ class Session
         if ($regenerate === true) {
             // regenerate the session ID
             session_regenerate_id(true);
-            // session data has been removed, refill it, if PHP session storage is used
+            // session data has been removed, refill it,
+            // if PHP session storage is used
             if (method_exists($this->_storage, 'refillSession') === true) {
                 $this->_storage->refillSession();
             }
@@ -164,31 +225,28 @@ class Session
     /**
      * Checks for the possibility of a hijack
      *
-     * Checks the user agent, time and IP of the session, if configured to check so, if not set, it sets it.
+     * Checks the user agent and time of the session, if not set, it sets it.
      * On a failed check the session is immediately destroyed.
      * TODO:
-     * - check the IP of the session if so set in the config
-     * - add session timeout checks
+     * - needs more aggresive anti-hijack checks
      */
     protected function _checkSession()
     {
         $userAgent = $this->_storage->getVariable('UserAgent');
+        $lastTime = $this->_storage->getVariable('LastActiveTime');
         // check if the user agent has been set
-        if ($userAgent !== false) {
+        if ($userAgent !== false && $lastTime !== false) {
             // user agent is set, let's do the checks
-            if ($userAgent === $_SERVER['HTTP_USER_AGENT']) {
+            if ($userAgent === $_SERVER['HTTP_USER_AGENT'] && (time() - $lastTime > $this->_expire) === false) {
                 // everything is fine, move on to the next check
             } else {
-                // user agent is not ok, destroy the session immediately
+                // user agent is not ok, or session has expired -> destroy the session immediately
                 $this->_storage->destroySession();
             }
         } else {
             // user agent has not been set, set it now
             $this->_storage->setVariable('UserAgent', $_SERVER['HTTP_USER_AGENT']);
         }
+        $this->_storage->setVariable('LastActiveTime', time());
     }
 }
-
-/**
- * End of file ./SlaxWeb/Session/Session.php
- */

@@ -7,21 +7,6 @@ namespace SlaxWeb\Session\Storage\PhpStorage;
  * Uses the \Session\Storage\iStorage interface
  * Copyright (c) 2013 Tomaz Lovrec (tomaz.lovrec@gmail.com)
  *
- * This file is part of "SlaxWeb Framework".
- *
- * "SlaxWeb Framework" is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Foobar is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
- *
  * @author Tomaz Lovrec <tomaz.lovrec@gmail.com>
  */
 class PhpStorage implements \SlaxWeb\Session\Storage\iStorage
@@ -40,7 +25,7 @@ class PhpStorage implements \SlaxWeb\Session\Storage\iStorage
     /**
      * Get the session variable.
      *
-     * @param $name string Name of the session variable
+     * @param $name mixed Name of the session variable or array of session variables
      * @return mixed Returns the value of a session variable, or false if it was not found
      *
      * TODO:
@@ -48,6 +33,13 @@ class PhpStorage implements \SlaxWeb\Session\Storage\iStorage
      */
     public function getVariable($name)
     {
+        if (is_array($name) === true) {
+            $data = array();
+            foreach ($name as $n) {
+                $data[$n] = isset($this->_variables[$n]) ? $this->_variables[$n] : false;
+            }
+            return $data;
+        }
         return isset($this->_variables[$name]) ? $this->_variables[$name] : false;
     }
 
