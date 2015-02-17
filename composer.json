@@ -1,7 +1,7 @@
 {
     "name": "slaxweb/session",
     "description": "SlaxWeb Session Library",
-    "license": "GPLv3",
+    "license": "MIT",
     "authors": [
         {
             "name": "Tomaz Lovrec",
