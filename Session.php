@@ -10,10 +10,7 @@ session_start();
  * - normal PHP session storage
  * - database storage (to be done)
  * - memcached (to be done)
-<<<<<<< HEAD
  * Copyright (c) 2013 Tomaz Lovrec (tomaz.lovrec@gmail.com)
-=======
->>>>>>> 1ab7c95972f317968d078ec3f6827aa1e9e183ac
  *
  * @author Tomaz Lovrec <tomaz.lovrec@gmail.com>
  */
@@ -37,10 +34,11 @@ class Session
      * @var integer
      */
     protected $_expire = null;
-
-    const SESSION_STORAGE_PHP       =   1;
-    const SESSION_STORAGE_DB        =   2;
-    const SESSION_STORAGE_MEMCACHED =   3;
+    /**
+     * Config
+     * @var array
+     */
+    protected $_config = array();
 
     /**
      * Storage constants
@@ -58,8 +56,11 @@ class Session
      * @param $storage int Type of storage to use.
      *                      Default value: SESSION_STORAGE_PHP
      */
-    public function __construct($storage = self::SESSION_STORAGE_PHP, $expire = 1800)
+    public function __construct($storage = self::SESSION_STORAGE_PHP, $expire = 1800, array $config = array())
     {
+        // set config
+        $this->_config = $config;
+        // set expiration
         $this->_expire = $expire;
         // set the storage
         $this->setStorage($storage, false);
@@ -97,7 +98,14 @@ class Session
                 $this->_storage = new Storage\DbStorage\DbStorage();
                 break;
             case self::SESSION_STORAGE_MEMCACHED:
-                $this->_storage = new Storage\Memcached\Memcached();
+                if ((isset($this->_config["host"]) && isset($this->_config["port"])) === false) {
+                    throw new \Exception(
+                        "Session needs to be initialised with an config as 3rd parameter in constructor, "
+                        . "with \"host\" and \"port\" keys.",
+                        500
+                    );
+                }
+                $this->_storage = new Storage\Memcached\Memcached($this->_config["host"], $this->_config["port"]);
                 break;
         }
 
