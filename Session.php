@@ -65,6 +65,8 @@ class Session
         $this->_checkSession();
         // regenerate and set new session ID
         $this->_setSessionId(false);
+        // set config
+        $this->_config = $config;
     }
 
     /**
