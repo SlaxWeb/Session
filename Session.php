@@ -37,6 +37,11 @@ class Session
      * @var integer
      */
     protected $_expire = null;
+    /**
+     * Config
+     * @var array
+     */
+    protected $_config = array();
 
     /**
      * Storage constants
@@ -54,7 +59,7 @@ class Session
      * @param $storage int Type of storage to use.
      *                      Default value: SESSION_STORAGE_PHP
      */
-    public function __construct($storage = self::SESSION_STORAGE_PHP, $expire = 1800)
+    public function __construct($storage = self::SESSION_STORAGE_PHP, $expire = 1800, array $config = array())
     {
         $this->_expire = $expire;
         // set the storage
@@ -93,7 +98,14 @@ class Session
                 $this->_storage = new Storage\DbStorage\DbStorage();
                 break;
             case self::SESSION_STORAGE_MEMCACHED:
-                $this->_storage = new Storage\Memcached\Memcached();
+                if ((isset($this->_config["host"]) && isset($this->_config["port"])) === false) {
+                    throw new Exception(
+                        "Session needs to be initialised with an config as 3rd parameter in constructor, "
+                        . "with \"host\" and \"port\" keys.",
+                        500
+                    );
+                }
+                $this->_storage = new Storage\Memcached\Memcached($this->_config["host"], $this->_config["port"]);
                 break;
         }
 
