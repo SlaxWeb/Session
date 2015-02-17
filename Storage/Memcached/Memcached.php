@@ -18,7 +18,7 @@ class Memcached extends \SlaxWeb\Session\Storage\PhpStorage\PhpStorage implement
      */
     public function __construct($host = "127.0.0.1", $port = "11211")
     {
-        ini_set("sesion.save_handler", "memcached");
+        ini_set("session.save_handler", "memcached");
         ini_set("session.save_path", "{$host}:{$port}");
 
         parent::__construct();
