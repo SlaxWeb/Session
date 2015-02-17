@@ -18,6 +18,8 @@ class PhpStorage implements \SlaxWeb\Session\Storage\iStorage
      */
     public function __construct()
     {
+        // Start the session
+        session_start();
         // copy whole session to a local property
         $this->_getVariables();
     }
