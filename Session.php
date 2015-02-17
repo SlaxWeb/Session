@@ -58,6 +58,9 @@ class Session
      */
     public function __construct($storage = self::SESSION_STORAGE_PHP, $expire = 1800, array $config = array())
     {
+        // set config
+        $this->_config = $config;
+        // set expiration
         $this->_expire = $expire;
         // set the storage
         $this->setStorage($storage, false);
@@ -65,8 +68,6 @@ class Session
         $this->_checkSession();
         // regenerate and set new session ID
         $this->_setSessionId(false);
-        // set config
-        $this->_config = $config;
     }
 
     /**
