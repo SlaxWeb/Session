@@ -231,10 +231,15 @@ class Session
     {
         $userAgent = $this->_storage->getVariable('UserAgent');
         $lastTime = $this->_storage->getVariable('LastActiveTime');
+        /*
+         * check if client user agent is set
+         * relying on the user agent for security is bogus at best
+         */
+        $clientUserAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : "Missing";
         // check if the user agent has been set
         if ($userAgent !== false && $lastTime !== false) {
             // user agent is set, let's do the checks
-            if ($userAgent === $_SERVER['HTTP_USER_AGENT'] && (time() - $lastTime > $this->_expire) === false) {
+            if ($userAgent === $clientUserAgent && (time() - $lastTime > $this->_expire) === false) {
                 // everything is fine, move on to the next check
             } else {
                 // user agent is not ok, or session has expired -> destroy the session immediately
@@ -242,7 +247,7 @@ class Session
             }
         } else {
             // user agent has not been set, set it now
-            $this->_storage->setVariable('UserAgent', $_SERVER['HTTP_USER_AGENT']);
+            $this->_storage->setVariable('UserAgent', $clientUserAgent);
         }
         $this->_storage->setVariable('LastActiveTime', time());
     }
