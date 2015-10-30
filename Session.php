@@ -89,7 +89,7 @@ class Session
         switch ($storage) {
             case self::SESSION_STORAGE_PHP:
                 // set the PHP storage
-                $this->_storage = new Storage\PhpStorage\PhpStorage();
+                $this->_storage = new Storage\PhpStorage\PhpStorage($this->_config);
                 break;
             case self::SESSION_STORAGE_DB:
                 $this->_storage = new Storage\DbStorage\DbStorage();
@@ -102,7 +102,7 @@ class Session
                         500
                     );
                 }
-                $this->_storage = new Storage\Memcached\Memcached($this->_config["host"], $this->_config["port"]);
+                $this->_storage = new Storage\Memcached\Memcached($this->_config);
                 break;
         }
 

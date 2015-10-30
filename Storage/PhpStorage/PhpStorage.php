@@ -11,13 +11,16 @@ namespace SlaxWeb\Session\Storage\PhpStorage;
  */
 class PhpStorage implements \SlaxWeb\Session\Storage\iStorage
 {
-    protected $_variables = array ();
+    protected $_variables = array();
+    protected $_config = array();
 
     /**
      * Default class constructor
      */
-    public function __construct()
+    public function __construct($config)
     {
+        // Set the config
+        $this->_config = $config;
         // Init the session
         $this->_init();
         // copy whole session to a local property
@@ -138,18 +141,25 @@ class PhpStorage implements \SlaxWeb\Session\Storage\iStorage
     {
         // Set session entropy file
         $entropyFile = "/dev/urandom";
-        if (file_exists("/dev/arandom")) {
+        if (isset($this->_config["session.entropy_file"])) {
+            $entropyFile = $this->_config["session.entropy_file"];
+        } elseif (file_exists("/dev/arandom")) {
             $entropyFile = "/dev/arandom";
         }
         ini_set("session.entropy_file", $entropyFile);
 
         // Set session entropy length
-        ini_set("session.entropy_length", 2048);
+        $entropyLength = isset($this->_config["session.entropy_length"])
+            ? $this->_config["session.entropy_length"]
+            : 2048;
+        ini_set("session.entropy_length", $entropyLength);
 
         // Set session hash function
         $availAlgos = \hash_algos();
         $hashAlgo = "0";
-        if (in_array("sha512", $availAlgos)) {
+        if (isset($this->_config["session.hash_function"])) {
+            $hashAlgo = $this->_config["session.hash_function"];
+        } elseif (in_array("sha512", $availAlgos)) {
             $hashAlgo = "sha512";   
         } elseif (in_array("sha1", $availAlgos)) {
             $hashAlgo = "sha1";   
@@ -157,8 +167,12 @@ class PhpStorage implements \SlaxWeb\Session\Storage\iStorage
         ini_set("session.hash_function", $hashAlgo);
 
         // Set session cookie http only
-        ini_set("session.cookie_httponly", 1);
-
+        ini_set(
+            "session.cookie_httponly",
+            isset($this->_config["session.cookie_httponly"])
+                ? $this->_config["session.cookie_httponly"]
+                : 1
+        );
 
         // Initiate the session
         session_start();
