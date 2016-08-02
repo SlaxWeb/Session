@@ -14,6 +14,7 @@
 namespace SlaxWeb\Session\Service;
 
 use Pimple\Container;
+use SlaxWeb\Session\Exception\MissingDependencyException;
 
 class Provider implements \Pimple\ServiceProviderInterface
 {
@@ -43,12 +44,14 @@ class Provider implements \Pimple\ServiceProviderInterface
                 case "memcache":
                 case "memcached":
                 case "mongo":
-                    if (isset($container["{$handler}Handler.service"]) === false) {
-                        // @todo: throw exception
+                    if (isset($container["{$handler}.service"]) === false) {
+                        throw new MissingDependencyException(
+                            "Required '{$handler}.service' is not registered with the DIC"
+                        );
                     }
                     $handler = ucfirst($handler);
                     $handlerClass = "{$hNamespace}{$handler}SessionHandler";
-                    $storageHandler = new $handlerClass($container["{$handler}Handler.service"]);
+                    $storageHandler = new $handlerClass($container["{$handler}.service"]);
                     break;
                 case "database":
                     $handlerClass = "{$hNamespace}PdoSessionHandler";
@@ -64,7 +67,9 @@ class Provider implements \Pimple\ServiceProviderInterface
                             ["db_username" => $config["username"], "db_password" => $config["password"]]
                         );
                     } else {
-                        // @todo: throw exception
+                        throw new MissingDependencyException(
+                            "Install the database component to store session data in the database."
+                        );
                     }
                     break;
                 default:
