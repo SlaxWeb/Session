@@ -31,6 +31,19 @@ class Provider implements \Pimple\ServiceProviderInterface
     public function register(Container $container)
     {
         $container["session.service"] = function (Container $container) {
+
+            $session = new \Symfony\Component\HttpFoundation\Session\Session($container["sessionStorage.service"]);
+            return $session->start();
+        };
+
+        $container["sessionStorage.service"] = function (Container $container) {
+            return new \Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage(
+                $container["config.service"]["session.options"],
+                $container["storageHandler.service"]
+            );
+        };
+
+        $container["storageHandler.service"] = function (Container $container) {
             $storageHandler = null;
             $handler = $container["config.service"]["session.storageHandler"];
             $hNamespace = "\\Symfony\\Component\\HttpFoundation\\Session\\Storage\\Handler\\";
@@ -76,8 +89,7 @@ class Provider implements \Pimple\ServiceProviderInterface
                     break;
             }
 
-            $session = new \Symfony\Component\HttpFoundation\Session\Session($storageHandler);
-            return $session->start();
+            return $storageHandler;
         };
     }
 }
