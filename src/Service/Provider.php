@@ -33,7 +33,8 @@ class Provider implements \Pimple\ServiceProviderInterface
         $container["session.service"] = function (Container $container) {
 
             $session = new \Symfony\Component\HttpFoundation\Session\Session($container["sessionStorage.service"]);
-            return $session->start();
+            $session->start();
+            return $session;
         };
 
         $container["sessionStorage.service"] = function (Container $container) {
