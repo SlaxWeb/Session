@@ -76,7 +76,8 @@ class Provider implements \Pimple\ServiceProviderInterface
                     break;
             }
 
-            return new \Symfony\Component\HttpFoundation\Session\Session($storageHandler);
+            $session = new \Symfony\Component\HttpFoundation\Session\Session($storageHandler);
+            return $session->start();
         };
     }
 }
