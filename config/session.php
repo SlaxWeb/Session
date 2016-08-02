@@ -15,7 +15,7 @@
  * Session storage handler
  *
  * Available options are:
- * - native
+ * - native (default)
  * - memcache
  * - memcached
  * - mongo
