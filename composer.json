@@ -10,7 +10,7 @@
     ],
     "require": {
         "php":  ">=7.0.0",
-        "slaxweb/config": "dev-release/0.3.0",
+        "slaxweb/config": "~0.3",
         "symfony/http-foundation": "~3.0"
     },
     "autoload": {
